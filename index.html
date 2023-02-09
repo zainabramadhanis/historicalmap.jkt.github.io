@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jakarta Historical Map</title>
+
+    <!-- import cdn -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="./apps.css">
+    <link rel="stylesheet" href="./leaflet/leaflet.css">
+    <link rel="stylesheet" href="./dist_markercluster/MarkerCluster.css">
+    <link rel="stylesheet" href="./dist_markercluster/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="leaflet-search-master/dist/leaflet-search.src.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="./leaflet/leaflet.js"></script>
+    <script src="/dist_markercluster/leaflet.markercluster.js"></script>
+    <script src="leaflet-search-master/dist/leaflet-search.src.js"></script>
+        
+  </head>
+
+<body>
+    <!-- navbar -->
+    <nav class="navbar navbar-expand-sm bg-light" style="background-color: #538443 !important;">
+        <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="icon/landmark_logo.png" alt="logo" width="40" height="35" class="d-inline-block allign text-top">
+            Jakarta Historical Markers
+        </a>
+    <button class="navbar-toggler" type="button" data-mdb-toggle="collapse" data-mdb-target="#navbarRightAlignExample" aria-controls="navbarRightAlignExample" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarRightAlignExample">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="about.html">About</a>
+          </li>
+        <a class="nav-link" target="_blank" rel="noopener" href="https://www.facebook.com/groups/osm.id/?mibextid=HsNCOg">
+          <img src="icon/fb.png" width="30" height="30">
+        </a>
+        <a class="nav-link" target="_blank" rel="noopener" href="https://www.instagram.com/openstreetmap.id/?hl=en">
+          <img src="icon/ig.png" width="30" height="30">
+        </a>
+        <a class="nav-link" target="_blank" rel="noopener" href="https://t.me/osmindonesia">
+          <img src="icon/te.png" width="30" height="30">
+        </a>
+        <a class="nav-link" target="_blank" rel="noopener" href="https://twitter.com/OSM_ID">
+          <img src="icon/tw.png" width="30" height="30">
+        </a>
+      </li>
+      </ul>
+    </div>
+    </div>
+  </nav>
+
+  <!-- load map -->
+
+    <div id="map"></div>
+</body>
+</html>
+
+<!-- landmark geojson data -->
+<script src="./historic.js"></script>
+
+
+
+<!-- markercluster js -->
+<script src="./dist_markercluster/leaflet.markercluster.js"></script>
+
+<script>
+    var map = L.map('map').setView([-6.175191274298531, 106.82717193943927], 15);
+    var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors; Created by <a href="https://openstreetmap.or.id//">OpenStreetMap Indonesia</a>'
+}).addTo(map);
+
+    var StamenLite = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}{r}.{ext}', {
+    attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors; Created by <a href="https://openstreetmap.or.id//">OpenStreetMap Indonesia</a>',
+    subdomains: 'abcd',
+    minZoom: 0,
+    maxZoom: 20,
+    ext: 'png'
+    });
+
+    var satellite = L.tileLayer('https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=FTGPzGgYqGfnoplkcQNN', {
+    maxZoom: 15,
+    attribution: '&copy; <a href="https://www.maptiler.com">maptiler</a>; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors; Created by <a href="https://openstreetmap.or.id//">OpenStreetMap Indonesia</a>'
+    });
+
+// layer control
+    var baseMaps = {
+        'OpenStreetMap': osm,
+        'Lite': StamenLite,
+        'Satellite': satellite
+    }
+
+    layerControl = L.control.layers(null, baseMaps, {position: 'topleft'});
+    layerControl.addTo(map);
+
+// load geojson data
+var historical_markers = L.geoJSON(historic, {
+    onEachFeature: function (feature, layer) {
+      layer.bindPopup("<p></p><b><center>"
+                        +feature.properties.name+"</p></b></center>"
+                        +feature.properties.description+
+                        "<p><center><img src='" + feature.properties.imageUrl + "' style='width:200px;height:300x;'></center></p>"
+                        );
+    }
+});
+
+// shows the markers as cluster
+var markers = L.markerClusterGroup();
+
+markers.addLayer(historical_markers);
+map.addLayer(markers);
+
+//  control search
+ map.addControl(new L.Control.Search({
+  layer: markers,
+  propertyName: 'name'
+ }));
+
+</script>
